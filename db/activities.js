@@ -16,7 +16,6 @@ async function createActivity({ name, description }) {
       [name, description]
     );
     // console.log("activity ", activity);
-
     return activity;
   } catch (error) {
     throw new Error("Activity was not thrown into the table!");
@@ -30,11 +29,9 @@ async function getAllActivities() {
     SELECT id
     FROM activities;
     `);
-
     const activities = await Promise.all(
       allActivities.map((activity) => getActivityById(activity.id))
     );
-
     return activities;
   } catch (error) {
     throw new Error("Couldn't get all Activities!");
@@ -53,14 +50,12 @@ async function getActivityById(id) {
     `,
       [id]
     );
-
     if (!activitiesId) {
       throw {
         name: "ActivityIdNotFoundError",
         message: "Could not find an activity with that ActivityId",
       };
     }
-
     return activitiesId;
   } catch (error) {
     console.log("There is no Activity with this ID!");
@@ -79,14 +74,12 @@ async function getActivityByName(name) {
     `,
       [name]
     );
-
     if (!activitiesName) {
       throw {
         name: "ActivityNameNotFoundError",
         message: "Could not find an activity with that name!",
       };
     }
-
     return activitiesName;
   } catch (error) {
     console.log("There is no Activity with this name!");
@@ -103,9 +96,7 @@ async function updateActivity({ id, ...fields }) {
   const updateString = Object.keys(fields)
     .map((key, index) => `"${key}"=$${index + 1}`)
     .join(", ");
-
   // console.log("updateString: ", updateString);
-
   try {
     if (updateString.length > 0) {
       await client.query(

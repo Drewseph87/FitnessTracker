@@ -1,5 +1,5 @@
 const client = require("./client");
-const { attachActivitiesToRoutines } = require("./activities");
+// const { attachActivitiesToRoutines } = require("./activities");
 
 async function createRoutine({ creatorId, isPublic, name, goal }) {
   try {
@@ -15,16 +15,52 @@ async function createRoutine({ creatorId, isPublic, name, goal }) {
       [creatorId, isPublic, name, goal]
     );
     // console.log("routines: ", routine);
-
     return routine;
   } catch (error) {
     throw new Error("Routine was not thrown into the database!");
   }
 }
 
-async function getRoutineById(id) {}
+async function getRoutineById(id) {
+  try {
+    const {
+      rows: [routinesId],
+    } = await client.query(
+      `
+    SELECT *
+    FROM routines
+    WHERE id=$1;
+    `,
+      [id]
+    );
+    if (!routinesId) {
+      throw {
+        name: "RoutinesIdNotFoundError",
+        message: "Could not find an activity with that RoutinesId",
+      };
+    }
+    return routinesId;
+  } catch (error) {
+    console.log("There is no Routine with this ID!");
+  }
+}
 
-async function getRoutinesWithoutActivities() {}
+async function getRoutinesWithoutActivities() {
+  try {
+    const { rows: routinesWithoutActivities } = await client.query(`
+    SELECT id
+    FROM routines
+      `);
+    const routines = await Promise.all(
+      routinesWithoutActivities.map((routine) => getRoutineById(routine.id))
+    );
+
+    // console.log("Routines_Without_Activities: ", routines);
+    return routines;
+  } catch (error) {
+    throw new Error("Couldn't grab all routines!");
+  }
+}
 
 async function getAllRoutines() {}
 
