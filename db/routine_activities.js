@@ -25,15 +25,95 @@ async function addActivityToRoutine({
   }
 }
 
-async function getRoutineActivityById(id) {}
+async function getRoutineActivityById(id) {
+  try {
+    const {
+      rows: [routineActivitiesId],
+    } = await client.query(
+      `
+    SELECT *
+    FROM routine_activities
+    WHERE id=$1;
+    `,
+      [id]
+    );
+    if (!routineActivitiesId) {
+      throw {
+        name: "RoutineActivityIdNotFoundError",
+        message: "Could not find an activity with that RoutineActivityId",
+      };
+    }
+    return routineActivitiesId;
+  } catch (error) {
+    console.log("There is no routine activity with this ID!");
+  }
+}
 
-async function getRoutineActivitiesByRoutine({ id }) {}
+async function getRoutineActivitiesByRoutine({ id }) {
+  try {
+    const {
+      rows: routineActivitiesRoutine,
+    } = await client.query(
+      `
+    SELECT *
+    FROM routine_activities
+    WHERE "routineId"=$1;
+    `,
+      [id]
+    );
+    if (!routineActivitiesRoutine) {
+      throw {
+        name: "RoutineActivityRoutineNotFoundError",
+        message: "Could not find an activity with that RoutineActivityRoutine",
+      };
+    }
+    return routineActivitiesRoutine;
+  } catch (error) {
+    console.log("There is no routine activity with this ROUTINE!");
+  }
+}
 
-async function updateRoutineActivity({ id, ...fields }) {}
+async function updateRoutineActivity({ id, ...fields }) {
+  const updateString = Object.keys(fields)
+  .map((key, index) => `"${key}"=$${index + 1}`)
+  .join(", ");
+// console.log("updateString: ", updateString);
+  try {
+    if (updateString.length > 0) {
+      await client.query(`
+      UPDATE routine_activities
+      SET ${updateString}
+      WHERE id=${id}
+      RETURNING *;
+      `,
+        Object.values(fields)
+      );
+    }
+    return await getRoutineActivityById(id);
+  } catch (error) {
+    throw new Error("Could not update the routine_activity based on it's Id!");
+  }
+}
 
-async function destroyRoutineActivity(id) {}
+async function destroyRoutineActivity(id) {
+  try {
+    const {
+      rows: [destroyActivity],
+    } = await client.query(`
+      DELETE FROM routine_activities
+      WHERE id=$1
+      RETURNING *;
+    `, [id]);
 
-async function canEditRoutineActivity(routineActivityId, userId) {}
+    return destroyActivity;
+  } catch(error) {
+    throw new Error("Could not destroy routine activity");
+  }
+}
+
+async function canEditRoutineActivity(routineActivityId, userId) {
+  
+}
 
 module.exports = {
   getRoutineActivityById,

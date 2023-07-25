@@ -62,9 +62,29 @@ async function getRoutinesWithoutActivities() {
   }
 }
 
-async function getAllRoutines() {}
+async function getAllRoutines() {
+  try {
 
-async function getAllPublicRoutines() {}
+  } catch(error) {
+    throw new Error("Error getting routines");
+  }
+}
+
+async function getAllPublicRoutines() {
+/*  try {
+    const { rows: routines } = await client.query(`
+      SELECT id
+      FROM routines
+    `);
+    const routines = await Promise.all(
+      routinesWithoutActivities.map((routine) => getRoutineById(routine.id))
+    );
+
+  } catch(error) {
+    throw new Error("Error getting publice routines");
+  }
+}*/
+}
 
 async function getAllRoutinesByUser({ username }) {}
 
@@ -72,9 +92,49 @@ async function getPublicRoutinesByUser({ username }) {}
 
 async function getPublicRoutinesByActivity({ id }) {}
 
-async function updateRoutine({ id, ...fields }) {}
+async function updateRoutine({ id, ...fields }) {
+  const updateString = Object.keys(fields)
+  .map((key, index) => `"${key}"=$${index + 1}`)
+  .join(", ");
 
-async function destroyRoutine(id) {}
+  try{
+    if (updateString.length > 0) {
+      await client.query(`
+      UPDATE routines
+      SET ${updateString}
+      WHERE id=${id}
+      RETURNING *;
+      `,
+        Object.values(fields)
+      );
+    }
+    return await getRoutineById(id);
+  } catch(error) {
+    throw new Error("Could not update Routine");
+  }
+}
+
+async function destroyRoutine(id) {
+  try {    
+    await client.query(`
+      DELETE FROM routine_activities
+      WHERE "routineId"=$1
+      RETURNING *;
+    `, [id]);
+    const {
+      rows: [destroyRoutine],
+    } = await client.query(`
+      DELETE FROM routines
+      WHERE id=$1
+      RETURNING *;
+    `, [id]);
+
+
+    return destroyRoutine;
+  } catch(error) {
+    throw new Error("Could not destroy routine");
+  }
+}
 
 module.exports = {
   getRoutineById,
