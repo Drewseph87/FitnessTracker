@@ -87,7 +87,20 @@ async function getActivityByName(name) {
 }
 
 // used as a helper inside db/routines.js
-async function attachActivitiesToRoutines(routines) {}
+async function attachActivitiesToRoutines(routines) {
+  /*try {
+    const { rows: activities } = await client.query(`
+      SELECT activities.*
+      FROM activities
+      JOIN routine_activities ON activities.id=routine_activities."routineId"
+      WHERE routine_activities."actitivityId"=$1;
+    `, [routines]);
+
+    return activities;
+  } catch(error){
+    throw new Error("cannot attach")
+  }*/
+}
 
 async function updateActivity({ id, ...fields }) {
   // don't try to update the id
