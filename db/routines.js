@@ -65,20 +65,27 @@ async function getRoutinesWithoutActivities() {
 
 async function getAllRoutines() {
   try {
-    const { rows: routines } = await client.query(`
-      SELECT routines.*, user.username AS "creatorName"
+    const { rows: routines = [] } = await client.query(`
+      SELECT routines.*, users.username AS "creatorName"
       FROM routines
       JOIN users ON routines."creatorId"=users.id;
     `);
-    return attachActivitiesToRoutines(routines);
 
-  } catch(error) {
+    for (const routine of routines) {
+      const activities = await attachActivitiesToRoutines(routine);
+      routine.activities = activities;
+    }
+
+    // console.log("routinesNew: ", routines);
+    return routines;
+  } catch (error) {
+    console.log(error);
     throw new Error("Error getting routines");
   }
 }
 
 async function getAllPublicRoutines() {
-/* try {
+  /* try {
     const { rows: routines } = await client.query(`
       SELECT id
       FROM routines
@@ -101,12 +108,13 @@ async function getPublicRoutinesByActivity({ id }) {}
 
 async function updateRoutine({ id, ...fields }) {
   const updateString = Object.keys(fields)
-  .map((key, index) => `"${key}"=$${index + 1}`)
-  .join(", ");
+    .map((key, index) => `"${key}"=$${index + 1}`)
+    .join(", ");
 
-  try{
+  try {
     if (updateString.length > 0) {
-      await client.query(`
+      await client.query(
+        `
       UPDATE routines
       SET ${updateString}
       WHERE id=${id}
@@ -116,29 +124,34 @@ async function updateRoutine({ id, ...fields }) {
       );
     }
     return await getRoutineById(id);
-  } catch(error) {
+  } catch (error) {
     throw new Error("Could not update Routine");
   }
 }
 
 async function destroyRoutine(id) {
-  try {    
-    await client.query(`
+  try {
+    await client.query(
+      `
       DELETE FROM routine_activities
       WHERE "routineId"=$1
       RETURNING *;
-    `, [id]);
+    `,
+      [id]
+    );
     const {
       rows: [destroyRoutine],
-    } = await client.query(`
+    } = await client.query(
+      `
       DELETE FROM routines
       WHERE id=$1
       RETURNING *;
-    `, [id]);
-
+    `,
+      [id]
+    );
 
     return destroyRoutine;
-  } catch(error) {
+  } catch (error) {
     throw new Error("Could not destroy routine");
   }
 }

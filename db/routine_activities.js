@@ -21,6 +21,7 @@ async function addActivityToRoutine({
     // console.log("routine_activity: ", routine_activity);
     return routine_activity;
   } catch (error) {
+    // console.error(error);
     throw new Error("addActivityToRoutine didn't return a routineActivity");
   }
 }
@@ -51,9 +52,7 @@ async function getRoutineActivityById(id) {
 
 async function getRoutineActivitiesByRoutine({ id }) {
   try {
-    const {
-      rows: routineActivitiesRoutine,
-    } = await client.query(
+    const { rows: routineActivitiesRoutine } = await client.query(
       `
     SELECT *
     FROM routine_activities
@@ -75,12 +74,13 @@ async function getRoutineActivitiesByRoutine({ id }) {
 
 async function updateRoutineActivity({ id, ...fields }) {
   const updateString = Object.keys(fields)
-  .map((key, index) => `"${key}"=$${index + 1}`)
-  .join(", ");
-// console.log("updateString: ", updateString);
+    .map((key, index) => `"${key}"=$${index + 1}`)
+    .join(", ");
+  // console.log("updateString: ", updateString);
   try {
     if (updateString.length > 0) {
-      await client.query(`
+      await client.query(
+        `
       UPDATE routine_activities
       SET ${updateString}
       WHERE id=${id}
@@ -99,21 +99,22 @@ async function destroyRoutineActivity(id) {
   try {
     const {
       rows: [destroyActivity],
-    } = await client.query(`
+    } = await client.query(
+      `
       DELETE FROM routine_activities
       WHERE id=$1
       RETURNING *;
-    `, [id]);
+    `,
+      [id]
+    );
 
     return destroyActivity;
-  } catch(error) {
+  } catch (error) {
     throw new Error("Could not destroy routine activity");
   }
 }
 
-async function canEditRoutineActivity(routineActivityId, userId) {
-  
-}
+// async function canEditRoutineActivity(routineActivityId, userId) {}
 
 module.exports = {
   getRoutineActivityById,
@@ -121,5 +122,5 @@ module.exports = {
   getRoutineActivitiesByRoutine,
   updateRoutineActivity,
   destroyRoutineActivity,
-  canEditRoutineActivity,
+  // canEditRoutineActivity,
 };
