@@ -1,6 +1,6 @@
 const { attachActivitiesToRoutines } = require("./activities");
 const client = require("./client");
-// const { attachActivitiesToRoutines } = require("./activities");
+//const { attachActivitiesToRoutines } = require("./activities");
 
 async function createRoutine({ creatorId, isPublic, name, goal }) {
   try {
@@ -85,26 +85,89 @@ async function getAllRoutines() {
 }
 
 async function getAllPublicRoutines() {
-  /* try {
-    const { rows: routines } = await client.query(`
-      SELECT id
+  try {
+    const { rows: routines = [] } = await client.query(`
+      SELECT routines.*, users.username AS "creatorName"
       FROM routines
+      JOIN users ON routines."creatorId"=users.id
+      WHERE "isPublic"=true;
     `);
-    const routines = await Promise.all(
-      routinesWithoutActivities.map((routine) => getRoutineById(routine.id))
-    );
 
+    for (const routine of routines) {
+      const activities = await attachActivitiesToRoutines(routine);
+      routine.activities = activities;
+    }
+
+    return routines;
   } catch(error) {
+    console.log(error);
     throw new Error("Error getting publice routines");
   }
-}*/
 }
 
-async function getAllRoutinesByUser({ username }) {}
+async function getAllRoutinesByUser({ username }) {
+  try {
+    const { rows: routines = [] } = await client.query(`
+      SELECT routines.*, users.username AS "creatorName"
+      FROM routines
+      JOIN users ON routines."creatorId"=users.id
+      WHERE username=$1;
+    `, [username]);
 
-async function getPublicRoutinesByUser({ username }) {}
+    for (const routine of routines) {
+      const activities = await attachActivitiesToRoutines(routine);
+      routine.activities = activities;
+    }
 
-async function getPublicRoutinesByActivity({ id }) {}
+    return routines;
+  } catch (error) {
+    console.log(error);
+    throw new Error("Error getting routines by user");
+  }
+}
+
+async function getPublicRoutinesByUser({ username }) {
+  try {
+    const { rows: routines = [] } = await client.query(`
+      SELECT routines.*, users.username AS "creatorName"
+      FROM routines
+      JOIN users ON routines."creatorId"=users.id
+      WHERE "isPublic"=true AND users.username=$1;
+    `, [username]);
+
+    for (const routine of routines) {
+      const activities = await attachActivitiesToRoutines(routine);
+      routine.activities = activities;
+    }
+
+    return routines;
+  } catch(error) {
+    console.log(error);
+    throw new Error("Error getting public routines by user");
+  }
+}
+
+async function getPublicRoutinesByActivity({ id }) {
+  try {
+    const { rows: routines = [] } = await client.query(`
+      SELECT routines.*, users.username AS "creatorName"
+      FROM routines
+      JOIN users ON routines."creatorId"=users.id
+      JOIN routine_activities ON routine_activities."routineId"=routines.id
+      WHERE routines."isPublic"=true AND routine_activities."activityId"=$1;
+    `, [id]);
+
+    for (const routine of routines) {
+      const activities = await attachActivitiesToRoutines(routine);
+      routine.activities = activities;
+    }
+
+    return routines;
+  } catch(error) {
+    console.log(error);
+    throw new Error("Error getting public routines by activity");
+  }
+}
 
 async function updateRoutine({ id, ...fields }) {
   const updateString = Object.keys(fields)
