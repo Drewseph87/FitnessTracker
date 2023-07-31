@@ -37,7 +37,7 @@ const {
 
 describe("/api/users", () => {
   describe("POST /api/users/register", () => {
-    it("Creates a new user.", async () => {
+    it.only("Creates a new user.", async () => {
       // Create some fake user data
       const fakeUserData = {
         username: faker.internet.userName(),
@@ -49,6 +49,7 @@ describe("/api/users", () => {
         .send(fakeUserData);
 
       expectNotToBeError(response.body);
+      // console.log("responseBody: ", response.body);
 
       expect(response.body).toMatchObject({
         message: expect.any(String),

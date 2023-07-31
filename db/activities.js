@@ -90,15 +90,13 @@ async function getActivityByName(name) {
 async function attachActivitiesToRoutines(routine) {
   try {
     const { rows: activities } = await client.query(`
-      SELECT activities.*, routine_activities.count AS count, routine_activities.duration AS duration, routine_activities."routineId" AS "routineId", routine_activities."activityId" AS "routineActivityId"
+      SELECT activities.*, routine_activities.count AS count, routine_activities.duration AS duration, routine_activities."routineId" AS "routineId", routine_activities.id AS "routineActivityId"
       FROM activities
       JOIN routine_activities ON routine_activities."activityId"=activities.id
       WHERE routine_activities."routineId"=${routine.id};
       `);
 
-
-
-    //console.log("activities: ", activities);
+    console.log("activities: ", activities);
     return activities;
   } catch (error) {
     throw new Error("Couldn't find activities routine ID!");
