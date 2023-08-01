@@ -23,7 +23,7 @@ async function createUser({ username, password }) {
     delete user.password;
     return user;
   } catch (error) {
-    console.log("Error creating user!");
+    throw new Error("Error creating user!");
   }
 }
 

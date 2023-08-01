@@ -1,6 +1,5 @@
 const { attachActivitiesToRoutines } = require("./activities");
 const client = require("./client");
-//const { attachActivitiesToRoutines } = require("./activities");
 
 async function createRoutine({ creatorId, isPublic, name, goal }) {
   try {
@@ -99,7 +98,7 @@ async function getAllPublicRoutines() {
     }
 
     return routines;
-  } catch(error) {
+  } catch (error) {
     console.log(error);
     throw new Error("Error getting publice routines");
   }
@@ -107,12 +106,15 @@ async function getAllPublicRoutines() {
 
 async function getAllRoutinesByUser({ username }) {
   try {
-    const { rows: routines = [] } = await client.query(`
+    const { rows: routines = [] } = await client.query(
+      `
       SELECT routines.*, users.username AS "creatorName"
       FROM routines
       JOIN users ON routines."creatorId"=users.id
       WHERE username=$1;
-    `, [username]);
+    `,
+      [username]
+    );
 
     for (const routine of routines) {
       const activities = await attachActivitiesToRoutines(routine);
@@ -128,12 +130,15 @@ async function getAllRoutinesByUser({ username }) {
 
 async function getPublicRoutinesByUser({ username }) {
   try {
-    const { rows: routines = [] } = await client.query(`
+    const { rows: routines = [] } = await client.query(
+      `
       SELECT routines.*, users.username AS "creatorName"
       FROM routines
       JOIN users ON routines."creatorId"=users.id
       WHERE "isPublic"=true AND users.username=$1;
-    `, [username]);
+    `,
+      [username]
+    );
 
     for (const routine of routines) {
       const activities = await attachActivitiesToRoutines(routine);
@@ -141,7 +146,7 @@ async function getPublicRoutinesByUser({ username }) {
     }
 
     return routines;
-  } catch(error) {
+  } catch (error) {
     console.log(error);
     throw new Error("Error getting public routines by user");
   }
@@ -149,13 +154,16 @@ async function getPublicRoutinesByUser({ username }) {
 
 async function getPublicRoutinesByActivity({ id }) {
   try {
-    const { rows: routines = [] } = await client.query(`
+    const { rows: routines = [] } = await client.query(
+      `
       SELECT routines.*, users.username AS "creatorName"
       FROM routines
       JOIN users ON routines."creatorId"=users.id
       JOIN routine_activities ON routine_activities."routineId"=routines.id
       WHERE routines."isPublic"=true AND routine_activities."activityId"=$1;
-    `, [id]);
+    `,
+      [id]
+    );
 
     for (const routine of routines) {
       const activities = await attachActivitiesToRoutines(routine);
@@ -163,7 +171,7 @@ async function getPublicRoutinesByActivity({ id }) {
     }
 
     return routines;
-  } catch(error) {
+  } catch (error) {
     console.log(error);
     throw new Error("Error getting public routines by activity");
   }
