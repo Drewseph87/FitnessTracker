@@ -1,13 +1,14 @@
 async function requireUser(req, res, next) {
   if (!req.user) {
-    next({
+    // console.log(req.user);
+    res.send({
+      error: "Missing logged in User Error",
       message: "You must be logged in to perform this action",
       name: "MissingUserError",
-      error: "Missing logged in User Error",
     });
+  } else {
+    next();
   }
-
-  next();
 }
 
 module.exports = {

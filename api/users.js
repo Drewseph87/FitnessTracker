@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const { requireUser } = require("./utils.js");
 //const { JWT_SECRET } = process.env;
 
 const {
@@ -104,13 +105,15 @@ router.post("/login", async (req, res, next) => {
 });
 
 // GET /api/users/me
-router.get("/users/me", async (req, res, next) => {
+router.get("/me", requireUser, async (req, res, next) => {
   const { username } = req.params;
+
   try {
     const token = jwt.sign({ username }, process.env.JWT_SECRET, {
       expiresIn: "2w",
     });
     const user = await getUser({ username, token });
+
     if (!token) {
       next({
         message: "Incorrect Info",
@@ -127,4 +130,5 @@ router.get("/users/me", async (req, res, next) => {
 router.get("/:username/routines", async (req, res, next) => {
   const { username } = req.params;
 });
+
 module.exports = router;

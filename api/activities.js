@@ -53,8 +53,8 @@ router.post("/", async (req, res, next) => {
 router.patch("/:activityId", async (req, res, next) => {
   const { activityId } = req.params;
   const { name, description } = req.body;
-  console.log("PARAMS", req.params);
-  console.log("REQ BODY", req.body);
+  // console.log("PARAMS", req.params);
+  // console.log("REQ BODY", req.body);
 
   try {
     const originalActivity = await getActivityById(activityId);
