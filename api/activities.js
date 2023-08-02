@@ -8,6 +8,8 @@ const {
   createActivity,
   getActivityByName,
   getActivityById,
+  updateActivity,
+  getPublicRoutinesByActivity,
 } = require("../db");
 
 // GET /api/activities
@@ -51,25 +53,66 @@ router.post("/", async (req, res, next) => {
 router.patch("/:activityId", async (req, res, next) => {
   const { activityId } = req.params;
   const { name, description } = req.body;
+  console.log("PARAMS", req.params);
+  console.log("REQ BODY", req.body);
 
-  const updatedFields = {};
+  try {
+    const originalActivity = await getActivityById(activityId);
+    const originalName = await getActivityByName(name);
 
-  if (name) {
-    updatedFields.name = name;
+    if (!originalActivity) {
+      res.send({
+        message: `Activity ${activityId} not found`,
+        name: "ActivityIdDoesn'tExistError",
+        error: `ERROR finding this activity ID, ${activityId}`,
+      });
+    } else if (originalName && originalName.name === name) {
+      res.send({
+        message: `An activity with name ${name} already exists`,
+        name: "ActivityNameDoesn'tExistError",
+        error: `ERROR finding this activity name,  ${name}`,
+      });
+    } else {
+      const updatedActivity = await updateActivity({
+        id: activityId,
+        name: name,
+        description: description,
+      });
+      console.log("UpdatedActivityInfo: ", updatedActivity);
+      res.send(updatedActivity);
+    }
+  } catch ({ name, message }) {
+    next({ name, message });
   }
-
-  if (description) {
-    updatedFields.description = description;
-  }
-
-  //   try {
-  const originalActivity = await getActivityById(activityId);
-
-  // if(originalActivity. )
-  //   } catch {}
 });
 
 // // GET /api/activities/:activityId/routines
-// router.get("/:activiyId/routines", async (req, res, next) => {});
+router.get("/:activityId/routines", async (req, res, next) => {
+  const { activityId } = req.params;
+  try {
+    const activityParamId = await getActivityById(activityId);
+    console.log("WHAT IS THIS!!!!: ", activityParamId);
+
+    if (activityParamId) {
+      const activityRoutines = await getPublicRoutinesByActivity({
+        id: activityId,
+      });
+      console.log(
+        "Looking for ActivityID through Routines: ",
+        activityRoutines
+      );
+
+      res.send(activityRoutines);
+    } else {
+      res.send({
+        message: `Activity ${activityId} not found`,
+        name: "ActivityParamIdDoesn'tExistError",
+        error: `Error finding Activity Id, ${activityParamId}`,
+      });
+    }
+  } catch ({ name, message }) {
+    ({ name, message });
+  }
+});
 
 module.exports = router;
