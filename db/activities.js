@@ -96,7 +96,7 @@ async function attachActivitiesToRoutines(routine) {
       WHERE routine_activities."routineId"=${routine.id};
       `);
 
-    console.log("activities: ", activities);
+    // console.log("activities: ", activities);
     return activities;
   } catch (error) {
     throw new Error("Couldn't find activities routine ID!");

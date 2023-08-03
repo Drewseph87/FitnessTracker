@@ -1,7 +1,6 @@
 require("dotenv").config();
 const express = require("express");
 const router = express.Router();
-const jwt = require("jsonwebtoken");
 
 const {
   getAllPublicRoutines,
@@ -11,6 +10,7 @@ const {
   destroyRoutine,
   getRoutineActivitiesByRoutine,
   addActivityToRoutine,
+  getRoutineActivityById,
 } = require("../db");
 const { requireUser } = require("./utils.js");
 
@@ -79,7 +79,7 @@ router.delete("/:routineId", requireUser, async (req, res, next) => {
   const { id } = req.user;
   const { isPublic, name, goal } = req.body;
 
-  //   try {
+  try {
   const theRoutine = await getRoutineById(routineId);
   if (theRoutine.creatorId === id) {
     const deleteRoutine = await destroyRoutine({
@@ -94,11 +94,39 @@ router.delete("/:routineId", requireUser, async (req, res, next) => {
       error: "Error",
     });
   }
-  //   } catch ({ name, message }) {
-  //     next({ name, message });
-  //   }
+  } catch ({ name, message }) {
+    next({ name, message });
+  }
 });
 
 // POST /api/routines/:routineId/activities
+router.post("/:routineId/activities", requireUser, async (req, res, next) => {
+  const { routineId } = req.params;
+  //const { id } = req.user;
+  const { duration, count, activityId } = req.body;
+
+  try {  
+    const routineActivitiesId = await getRoutineActivityById(activityId);
+    if(routineActivitiesId) {
+      next({
+        name: "DuplicateIdError",
+        message: `Activity ID ${activityId} already exists in Routine ID ${routineId}`,
+      });
+    } else {
+      const newActivity = await addActivityToRoutine({
+        routineId,
+        duration,
+        count,
+        activityId,
+      });
+      res.send(newActivity);
+    }
+
+    return newActivity;
+  } catch({ name, message }) {
+    next({ name, message });
+  }
+});
+
 
 module.exports = router;

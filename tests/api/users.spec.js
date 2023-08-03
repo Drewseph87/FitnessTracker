@@ -37,7 +37,7 @@ const {
 
 describe("/api/users", () => {
   describe("POST /api/users/register", () => {
-    it.only("Creates a new user.", async () => {
+    it("Creates a new user.", async () => {
       // Create some fake user data
       const fakeUserData = {
         username: faker.internet.userName(),
@@ -61,7 +61,7 @@ describe("/api/users", () => {
       });
     });
 
-    xit("EXTRA CREDIT: Hashes password before saving user to DB.", async () => {
+    it("EXTRA CREDIT: Hashes password before saving user to DB.", async () => {
       // Create some fake user data
       const fakeUserData = {
         username: faker.internet.userName(),
@@ -98,7 +98,7 @@ describe("/api/users", () => {
       );
     });
 
-    xit("Throws errors for duplicate username", async () => {
+    it("Throws errors for duplicate username", async () => {
       // Create a fake user in the DB
       const { fakeUser: firstUser } = await createFakeUserWithToken();
       // Now try to create a user with the same username
@@ -119,7 +119,7 @@ describe("/api/users", () => {
       );
     });
 
-    xit("returns error if password is less than 8 characters.", async () => {
+    it("returns error if password is less than 8 characters.", async () => {
       // Create some user data with a password with 7 characters
       const newUserShortPassword = {
         username: faker.internet.userName(),
@@ -203,7 +203,7 @@ describe("/api/users", () => {
   });
 
   describe("GET /api/users/me", () => {
-    it.only("sends back users data if valid token is supplied in header", async () => {
+    it("sends back users data if valid token is supplied in header", async () => {
       const { fakeUser, token } = await createFakeUserWithToken();
 
       const response = await request(app)
@@ -234,7 +234,7 @@ describe("/api/users", () => {
       const sean = await createFakeUserWithRoutinesAndActivities("Sean");
 
       const response = await request(app)
-        .get(`/api/users/${sean.fakeUser.username}/routines`)
+        .get(`/api/users/${fakeUser.username}/routines`)
         .set("Authorization", `Bearer ${token}`);
 
       expectNotToBeError(response.body);
